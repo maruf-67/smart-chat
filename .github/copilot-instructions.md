@@ -1,4 +1,50 @@
 <laravel-boost-guidelines>
+=== smart-chat architecture ===
+
+## Project Architecture (MONOLITHIC WEB + REACT)
+
+**This is NOT an API.** This is a **monolithic Laravel + React web application** using Inertia.js for SSR.
+
+### Key Distinctions:
+- ✅ Routes in `routes/web.php` ONLY (no `routes/api/`)
+- ✅ Controllers return `Inertia::render()` (not JSON responses)
+- ✅ Authentication: Session-based via Fortify (not OAuth2 tokens)
+- ✅ Middleware: `auth()` and `auth()->user()` (not `auth('api')`)
+- ✅ Response on 403: `abort(403)` (not JSON)
+- ✅ Response on redirect: `redirect()->route()` (not JSON)
+
+### Route Structure (Web-Based):
+```
+/                    → Public welcome page
+/dashboard           → Authenticated user dashboard
+/admin/...          → Admin panel (middleware: auth → verified → admin)
+/agent/...          → Agent panel (middleware: auth → verified → agent)
+/chat/{guestId}     → Guest chat thread (no auth required)
+/settings/...       → Settings routes (via settings.php)
+```
+
+### Middleware Stack:
+```
+1. auth             → Requires Fortify session authentication
+2. verified         → Requires verified email (Fortify)
+3. admin / agent    → Requires specific user_type (via custom middleware)
+4. permission       → Requires specific permission (via custom middleware)
+```
+
+### Controllers:
+- All in `app/Http/Controllers/` (not API-separated)
+- Return `Inertia::render('Page', $props)`
+- Use FormRequest validation
+- No JSON response methods
+
+### RBAC Usage:
+- **Models**: User (with role_id + user_type enum) → Role (with JSON permissions)
+- **Traits**: Loggable (audit columns), ImageOptimizable (file management)
+- **Permission Checks**: `auth()->user()->hasPermission('key')` in controllers or middleware
+- **Type Checks**: `auth()->user()->isAdmin()` or `isAgent()`
+
+---
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -45,7 +91,94 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - Be concise in your explanations - focus on what's important rather than explaining obvious details.
 
 ## Documentation Files
-- You must only create documentation files if explicitly requested by the user.
+- You must **ONLY** create documentation files if explicitly requested by the user.
+- **NEVER** create additional `.md` files in `/docs` directory without explicit user approval.
+- Keep documentation minimal: `planning.md`, `requirement.md`, `RBAC_QUICK_REFERENCE.md` are sufficient.
+- **CODING PATTERNS**: Reference `.github/patterns.md` for repeating code patterns - **DO NOT create task-specific pattern files**
+- Reference `.github/patterns.md` before writing code to ensure consistency
+
+
+=== mcp server requirements ===
+
+## MCP Server Integration (MANDATORY FOR EVERY TASK)
+
+**CRITICAL**: You must use MCP servers for every development task. This is not optional.
+
+### Required for Every Task:
+1. **Laravel Boost** → Query database schema, run Artisan commands, debug with Tinker
+2. **Context7** → Get up-to-date package documentation for any library
+3. **Sequential Thinking** → Break down complex problems, verify solutions
+4. **Git MCP** (if available) → Track changes, commits, branches
+
+### Usage Pattern (MANDATORY):
+
+```
+For EVERY task:
+
+1. Use Sequential Thinking FIRST
+   → Break down what needs to be done
+   → Identify blockers or edge cases
+   → Verify approach with analysis
+
+2. Use Laravel Boost
+   → Query database schema
+   → Check Artisan commands available
+   → Get environment info
+   → Debug with Tinker if needed
+
+3. Use Context7
+   → Search for package-specific docs
+   → Verify version compatibility
+   → Get API examples
+
+4. Make Changes
+   → Create/edit files with correct context
+   → Run pint --dirty for formatting
+   → Run tests to verify
+
+5. Update Documentation
+   → Update .copilot/memory-bank.md with progress
+   → Update docs/planning.md if plan changes
+   → NEVER create new .md files
+```
+
+### Example Workflow
+
+```bash
+# START OF TASK
+→ Use Sequential Thinking to plan
+→ Use Laravel Boost to get app info
+→ Use Context7 to get docs if needed
+→ Make code changes
+→ Run tests
+→ Update memory-bank.md
+# END OF TASK
+```
+
+### What EACH MCP Server Does
+
+| Server | Use For | When to Call |
+|--------|---------|-------------|
+| **Laravel Boost** | Database queries, Artisan commands, debugging | Start of task (app-info), during implementation |
+| **Context7** | Package documentation, API references | When using unfamiliar packages |
+| **Sequential Thinking** | Complex problem breakdown, solution verification | For architectural decisions, complex logic |
+| **Git MCP** | Commits, branch tracking, diffs | Before finalizing changes |
+
+### DO NOT SKIP MCP USAGE
+
+- ❌ Do NOT code without using Sequential Thinking first
+- ❌ Do NOT assume package APIs without Context7
+- ❌ Do NOT make DB queries without Laravel Boost
+- ❌ Do NOT skip testing before committing
+- ❌ Do NOT create MD files without asking
+
+### Update Memory Bank EVERY Time
+
+After using MCP servers:
+1. Log what you learned
+2. Update `.copilot/memory-bank.md`
+3. Note any decisions made
+4. Document blockers if any
 
 
 === boost rules ===
