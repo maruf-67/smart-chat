@@ -42,7 +42,7 @@ class DashboardController
         $filters = ['agent_id' => auth()->id()];
         $chats = $this->chatService->getChats($filters);
 
-        return Inertia::render('Agent/Dashboard', [
+        return Inertia::render('agent/dashboard', [
             'chats' => $chats,
         ]);
     }

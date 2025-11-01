@@ -42,7 +42,7 @@ class ChatController
         $filters = request()->all();
         $chats = $this->chatService->getChats($filters);
 
-        return Inertia::render('Admin/Chats/Index', [
+        return Inertia::render('admin/chats/index', [
             'chats' => $chats,
             'filters' => $filters,
         ]);
@@ -65,7 +65,7 @@ class ChatController
     {
         $chat = $this->chatService->getChatById($id);
 
-        return Inertia::render('Admin/Chats/Show', [
+        return Inertia::render('admin/chats/show', [
             'chat' => $chat,
         ]);
     }

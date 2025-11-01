@@ -30,7 +30,7 @@ class DashboardController
      */
     public function index(): Response
     {
-        return Inertia::render('Admin/Dashboard', [
+        return Inertia::render('admin/dashboard', [
             'title' => 'Admin Dashboard',
         ]);
     }

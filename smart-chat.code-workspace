@@ -1,11 +1,11 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../laravel-modular/lara-api-starter"
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": ".",
+        },
+        {
+            "path": "../../../../home/almaruf67/Codes/Nuxt/job-portal-admin",
+        },
+    ],
+    "settings": {},
 }

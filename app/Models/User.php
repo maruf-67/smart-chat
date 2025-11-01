@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Traits\ImageOptimizable;
 use App\Traits\Loggable;
-use Illuminate\Database\Eloquent\Attributes\Attribute;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -42,6 +42,22 @@ class User extends Authenticatable
         'created_ip',
         'updated_ip',
     ];
+
+    /**
+     * Override fill to handle the computed 'name' field.
+     */
+    public function fill(array $attributes)
+    {
+        // Handle the special 'name' field by splitting it into first_name and last_name
+        if (isset($attributes['name'])) {
+            $nameParts = explode(' ', trim($attributes['name']), 2);
+            $attributes['first_name'] = $nameParts[0] ?? '';
+            $attributes['last_name'] = $nameParts[1] ?? '';
+            unset($attributes['name']);
+        }
+
+        return parent::fill($attributes);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -83,6 +99,10 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: fn (): string => trim("{$this->first_name} {$this->last_name}"),
+            set: fn (?string $value): array => [
+                'first_name' => collect(explode(' ', trim($value ?? '')))->first() ?? '',
+                'last_name' => collect(explode(' ', trim($value ?? '')))->slice(1)->implode(' ') ?? '',
+            ],
         );
     }
 

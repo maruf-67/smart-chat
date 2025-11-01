@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,14 +17,12 @@ use Laravel\Fortify\Features;
 
 // Public routes (no authentication required)
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+    return Inertia::render('welcome');
 })->name('home');
 
 // Guest chat access
 Route::prefix('chat')->name('chat.')->group(function () {
     Route::get('/{guestIdentifier}', function ($guestIdentifier) {
-        return Inertia::render('Chat/Thread', ['guestIdentifier' => $guestIdentifier]);
+        return Inertia::render('chat/thread', ['guestIdentifier' => $guestIdentifier]);
     })->name('show');
 });

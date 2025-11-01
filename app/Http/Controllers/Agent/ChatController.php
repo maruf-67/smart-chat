@@ -47,7 +47,7 @@ class ChatController
         ];
         $chats = $this->chatService->getChats($filters);
 
-        return Inertia::render('Agent/Chats/Index', [
+        return Inertia::render('agent/chats/index', [
             'chats' => $chats,
             'filters' => $filters,
         ]);
@@ -75,7 +75,7 @@ class ChatController
             abort(403, 'You do not have permission to view this chat.');
         }
 
-        return Inertia::render('Agent/Chats/Show', [
+        return Inertia::render('agent/chats/show', [
             'chat' => $chat,
         ]);
     }

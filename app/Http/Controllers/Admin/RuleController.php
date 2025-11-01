@@ -52,7 +52,7 @@ class RuleController
         $filters = request()->all();
         $rules = $this->ruleService->getRules($filters);
 
-        return Inertia::render('Admin/Rules/Index', [
+        return Inertia::render('admin/rules/index', [
             'rules' => $rules,
             'filters' => $filters,
         ]);
@@ -67,7 +67,7 @@ class RuleController
      */
     public function create(): Response
     {
-        return Inertia::render('Admin/Rules/Create');
+        return Inertia::render('admin/rules/create');
     }
 
     /**
@@ -103,7 +103,7 @@ class RuleController
     {
         $rule = $this->ruleService->getRuleById($id);
 
-        return Inertia::render('Admin/Rules/Edit', [
+        return Inertia::render('admin/rules/edit', [
             'rule' => $rule,
         ]);
     }

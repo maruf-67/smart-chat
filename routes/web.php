@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +23,13 @@ use Inertia\Inertia;
 // Authenticated routes (any authenticated user)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        $user = auth()->user();
+
+        return match ($user->user_type) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'agent' => redirect()->route('agent.dashboard'),
+            default => abort(403, 'Invalid user type. Please contact administrator.'),
+        };
     })->name('dashboard');
 });
 
