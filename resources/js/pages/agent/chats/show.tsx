@@ -109,12 +109,10 @@ export default function AgentChatShow({ chat }: { chat: Chat }) {
     // Real-time WebSocket connection
     useEffect(() => {
         if (typeof window === 'undefined' || !window.Echo) {
-            console.warn('[Agent Chat] Echo not available');
             return;
         }
 
         if (!userId) {
-            console.warn('[Agent Chat] No authenticated user found');
             return;
         }
 
@@ -123,10 +121,7 @@ export default function AgentChatShow({ chat }: { chat: Chat }) {
             `guest-chat.${chat.guest_identifier}`,
         ];
 
-        console.log('[Agent Chat] Connecting to channels:', channels);
-
         const listener = (payload: { message: Message }) => {
-            console.log('[Agent Chat] Received message:', payload.message);
             const newMessage = payload.message;
             if (newMessage.chat_id === chat.id) {
                 setMessages((prevMessages) => {
@@ -142,9 +137,6 @@ export default function AgentChatShow({ chat }: { chat: Chat }) {
         channels.forEach((channelName) => {
             const channel = window.Echo.channel(channelName);
             channel.subscribed(() => {
-                console.log(
-                    `[Agent Chat] Successfully subscribed to ${channelName}`,
-                );
                 setIsConnected(true);
             });
             channel.error(() => {
@@ -154,7 +146,6 @@ export default function AgentChatShow({ chat }: { chat: Chat }) {
         });
 
         return () => {
-            console.log('[Agent Chat] Cleaning up channel subscriptions');
             setMessages([]);
             channels.forEach((channelName) => {
                 window.Echo?.leave(channelName);

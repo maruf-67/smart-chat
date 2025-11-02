@@ -131,10 +131,7 @@ export default function AdminChatShow({ chat, agents }: Props) {
 
         const channels = [`guest-chat.${chat.guest_identifier}`, 'admin-chats'];
 
-        console.log('[Admin Chat] Connecting to channels:', channels);
-
         const listener = (payload: { message: Message }) => {
-            console.log('[Admin Chat] Received message:', payload.message);
             const newMessage = payload.message;
             // Ensure we only add messages for the current chat
             if (newMessage.chat_id === chat.id) {
@@ -150,16 +147,10 @@ export default function AdminChatShow({ chat, agents }: Props) {
 
         channels.forEach((channelName) => {
             const channel = window.Echo.channel(channelName);
-            channel.subscribed(() => {
-                console.log(
-                    `[Admin Chat] Successfully subscribed to ${channelName}`,
-                );
-            });
             channel.listen('.MessageSent', listener);
         });
 
         return () => {
-            console.log('[Admin Chat] Cleaning up channel subscriptions');
             setMessages([]);
             channels.forEach((channelName) => {
                 window.Echo?.leave(channelName);
