@@ -124,15 +124,9 @@ export default function ChatThread({ guestId, chat }: Props) {
         }
 
         const channelName = `guest-chat.${guestIdentifier}`;
-        console.log('[Guest Chat] Connecting to channel:', channelName);
         const channel = window.Echo.channel(channelName);
 
-        channel.subscribed(() => {
-            console.log('[Guest Chat] Successfully subscribed');
-        });
-
         const listener = (payload: { message: Message }) => {
-            console.log('[Guest Chat] Received message:', payload.message);
             const newMessage = payload.message;
             setMessages((prevMessages) => {
                 // Avoid adding duplicate messages
@@ -146,7 +140,6 @@ export default function ChatThread({ guestId, chat }: Props) {
         channel.listen('.MessageSent', listener);
 
         return () => {
-            console.log('[Guest Chat] Leaving channel:', channelName);
             channel.stopListening('.MessageSent', listener);
             setMessages([]);
             window.Echo?.leave(channelName);
