@@ -42,9 +42,9 @@ class UserController extends Controller
             })
             ->when(
                 $userType && in_array($userType, ['admin', 'agent', 'user'], true),
-                fn($q) => $q->where('user_type', $userType)
+                fn ($q) => $q->where('user_type', $userType)
             )
-            ->when($request->status !== null, fn($q) => $q->where('status', (bool) $request->status));
+            ->when($request->status !== null, fn ($q) => $q->where('status', (bool) $request->status));
 
         // Handle sorting
         $sortBy = $request->input('sort_by', 'created_at');

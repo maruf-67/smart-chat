@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\File;
 
 /**
  * StoreMessageRequest
@@ -41,6 +42,11 @@ class StoreMessageRequest extends FormRequest
     {
         return [
             'content' => 'required|string|max:5000|min:1',
+            'attachment' => [
+                'nullable',
+                'file',
+                File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(1024), // 1MB limit
+            ],
         ];
     }
 
@@ -55,6 +61,9 @@ class StoreMessageRequest extends FormRequest
             'content.required' => 'The message content is required.',
             'content.min' => 'The message cannot be empty.',
             'content.max' => 'The message must not exceed 5000 characters.',
+            'attachment.file' => 'The attachment must be a valid file.',
+            'attachment.mimes' => 'The attachment must be a PDF, JPG, JPEG, or PNG file.',
+            'attachment.max' => 'The attachment must not exceed 1MB in size.',
         ];
     }
 }

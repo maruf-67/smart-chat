@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Events\AgentAssigned;
+use App\Events\AgentUnassigned;
+use App\Events\MessageReceived;
+use App\Events\MessageSent;
 use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,7 +66,11 @@ class ChatService
      */
     public function getChatById(int $id): Chat
     {
-        return Chat::with(['messages', 'autoReplyRules', 'agent'])
+        return Chat::with([
+            'messages' => fn ($query) => $query->orderBy('created_at'),
+            'autoReplyRules',
+            'agent',
+        ])
             ->findOrFail($id);
     }
 
@@ -76,7 +84,10 @@ class ChatService
      */
     public function getChatByGuestIdentifier(string $guestIdentifier): ?Chat
     {
-        return Chat::with(['messages', 'autoReplyRules'])
+        return Chat::with([
+            'messages' => fn ($query) => $query->orderBy('created_at'),
+            'autoReplyRules',
+        ])
             ->where('guest_identifier', $guestIdentifier)
             ->first();
     }
@@ -134,10 +145,15 @@ class ChatService
      */
     public function assignAgent(int $chatId, int $agentId): Chat
     {
-        return $this->updateChat($chatId, [
+        $chat = $this->updateChat($chatId, [
             'agent_id' => $agentId,
             'last_activity_at' => now(),
         ]);
+
+        // Fire event to disable auto-reply when agent is assigned
+        AgentAssigned::dispatch($chat);
+
+        return $chat;
     }
 
     /**
@@ -150,16 +166,21 @@ class ChatService
      */
     public function releaseChat(int $chatId): Chat
     {
-        return $this->updateChat($chatId, [
+        $chat = $this->updateChat($chatId, [
             'agent_id' => null,
         ]);
+
+        // Fire event to re-enable auto-reply when agent is unassigned
+        AgentUnassigned::dispatch($chat);
+
+        return $chat;
     }
 
     /**
      * Add a message to a chat and update last_activity_at timestamp.
      *
      * @param  int  $chatId  Chat ID
-     * @param  array{user_id?: int|null, content: string, sender: string, is_auto_reply?: bool}  $messageData  Message data
+     * @param  array{user_id?: int|null, content: string, sender: string, is_auto_reply?: bool, file_path?: string, file_type?: string, file_size?: int}  $messageData  Message data
      * @return Message Created message instance
      *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If chat not found
@@ -173,6 +194,15 @@ class ChatService
 
         // Update chat's last activity timestamp
         $chat->update(['last_activity_at' => now()]);
+
+        $message->loadMissing(['chat', 'user']);
+
+        MessageSent::dispatch($message);
+
+        // Fire MessageReceived event for guest messages to trigger auto-reply
+        if ($message->sender === Message::SENDER_GUEST && ! $message->is_auto_reply) {
+            MessageReceived::dispatch($message);
+        }
 
         return $message;
     }
@@ -196,7 +226,8 @@ class ChatService
     {
         $query = Chat::with(['agent', 'messages' => function ($q) {
             $q->latest()->limit(1); // Eager load only latest message
-        }]);
+        }])
+            ->withCount('messages');
 
         // Filter by agent assignment
         if (isset($filters['agent_id'])) {

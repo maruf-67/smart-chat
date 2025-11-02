@@ -3,9 +3,7 @@
         {
             "path": ".",
         },
-        {
-            "path": "../../../../home/almaruf67/Codes/Nuxt/job-portal-admin",
-        },
+
     ],
     "settings": {},
 }

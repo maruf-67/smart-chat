@@ -44,3 +44,15 @@ export interface User {
     updated_at: string;
     [key: string]: unknown;
 }
+
+import type Echo from 'laravel-echo';
+
+declare global {
+    interface Window {
+        Echo?: Echo;
+        Laravel?: {
+            csrfToken?: string | null;
+            [key: string]: unknown;
+        };
+    }
+}

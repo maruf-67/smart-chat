@@ -98,13 +98,25 @@ export default function Welcome() {
 
                         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                             <RotateIn delay={0.6} axis="y">
-                                <Link href="/chat/new">
+                                <Link href="/chat">
                                     <Button
                                         size="lg"
                                         className="gap-2 shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
                                     >
                                         <MessageCircle className="h-5 w-5" />
                                         Start Chat Now
+                                    </Button>
+                                </Link>
+                            </RotateIn>
+                            <RotateIn delay={0.7} axis="y">
+                                <Link href="/chat?new=1">
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        className="gap-2 transition-all hover:scale-105"
+                                    >
+                                        <MessageCircle className="h-5 w-5" />
+                                        New Conversation
                                     </Button>
                                 </Link>
                             </RotateIn>
@@ -372,7 +384,7 @@ export default function Welcome() {
                                     style={{ transform: 'translateZ(50px)' }}
                                 >
                                     <RotateIn delay={1.2} axis="y">
-                                        <Link href="/chat/new">
+                                        <Link href="/chat?new=1">
                                             <Button
                                                 size="lg"
                                                 className="gap-2 shadow-lg shadow-primary/20 hover:scale-105 hover:shadow-xl hover:shadow-primary/30"

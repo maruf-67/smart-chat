@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Events\MessageSent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Message Model
@@ -46,6 +48,19 @@ class Message extends Model
     public const SENDER_BOT = 'bot';
 
     /**
+     * Boot the model and register event listeners.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        // Automatically fire MessageSent event when a message is created
+        static::created(function (Message $message) {
+            MessageSent::dispatch($message);
+        });
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -56,6 +71,10 @@ class Message extends Model
         'content',
         'sender',
         'is_auto_reply',
+        'is_from_guest',
+        'file_path',
+        'file_type',
+        'file_size',
         'created_by',
         'updated_by',
         'created_ip',
@@ -71,9 +90,23 @@ class Message extends Model
     {
         return [
             'is_auto_reply' => 'boolean',
+            'is_from_guest' => 'boolean',
+            'file_size' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the public URL for the file attachment.
+     */
+    public function getFileUrlAttribute(): ?string
+    {
+        if (! $this->file_path) {
+            return null;
+        }
+
+        return Storage::url($this->file_path);
     }
 
     /**

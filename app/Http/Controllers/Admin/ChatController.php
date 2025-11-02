@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Requests\StoreMessageRequest;
+use App\Models\Message;
 use App\Services\ChatService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -65,8 +67,22 @@ class ChatController
     {
         $chat = $this->chatService->getChatById($id);
 
+        // Get all agents for assignment dropdown
+        $agents = \App\Models\User::where('user_type', 'agent')
+            ->select('id', 'first_name', 'last_name', 'email')
+            ->orderBy('first_name')
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name, // Uses the accessor
+                    'email' => $user->email,
+                ];
+            });
+
         return Inertia::render('admin/chats/show', [
             'chat' => $chat,
+            'agents' => $agents,
         ]);
     }
 
@@ -90,9 +106,56 @@ class ChatController
             'auto_reply_enabled' => 'nullable|boolean',
         ]);
 
-        $this->chatService->updateChat($id, $data);
+        // Load current chat to detect assignment changes
+        $chat = $this->chatService->getChatById($id);
+        $incomingAgentId = $data['agent_id'] ?? $chat->agent_id;
+
+        // If agent assignment changed, use dedicated service methods
+        if (array_key_exists('agent_id', $data) && $incomingAgentId !== $chat->agent_id) {
+            if ($incomingAgentId) {
+                $this->chatService->assignAgent($id, $incomingAgentId);
+            } else {
+                $this->chatService->releaseChat($id);
+            }
+            // Remove agent_id so we don't double-update below
+            unset($data['agent_id']);
+        }
+
+        // Update remaining toggles (e.g., auto_reply_enabled)
+        if (! empty($data)) {
+            $this->chatService->updateChat($id, $data);
+        }
 
         return redirect()->route('admin.chats.show', $id)
             ->with('success', 'Chat updated successfully.');
+    }
+
+    /**
+     * Allow an admin user to send a message into a chat thread.
+     */
+    public function storeMessage(StoreMessageRequest $request, int $id): RedirectResponse
+    {
+        $messageData = [
+            'content' => $request->input('content'),
+            'sender' => Message::SENDER_AGENT,
+            'user_id' => auth()->id(),
+            'is_auto_reply' => false,
+            'is_from_guest' => false,
+        ];
+
+        // Handle file upload if present (use 'attachment' to match validation)
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $path = $file->store('chat-attachments', 'public');
+
+            $messageData['file_path'] = $path;
+            $messageData['file_type'] = strtolower($file->getClientOriginalExtension());
+            $messageData['file_size'] = $file->getSize();
+        }
+
+        $this->chatService->addMessage($id, $messageData);
+
+        return redirect()->route('admin.chats.show', $id)
+            ->with('success', 'Message sent successfully.');
     }
 }

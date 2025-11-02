@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Guest\ChatController as GuestChatController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -21,8 +22,11 @@ Route::get('/', function () {
 })->name('home');
 
 // Guest chat access
-Route::prefix('chat')->name('chat.')->group(function () {
-    Route::get('/{guestIdentifier}', function ($guestIdentifier) {
-        return Inertia::render('chat/thread', ['guestIdentifier' => $guestIdentifier]);
-    })->name('show');
-});
+Route::get('/chat', [GuestChatController::class, 'index'])->name('chat.index');
+Route::get('/chat/{guestIdentifier}', [GuestChatController::class, 'show'])->name('chat.show');
+Route::get('/chat/{guestIdentifier}/messages', [GuestChatController::class, 'loadMoreMessages'])->name('chat.messages.load');
+
+// Rate limiting: 10 messages per minute per guest to prevent spam
+Route::post('/chat/{guestIdentifier}/messages', [GuestChatController::class, 'storeMessage'])
+    ->middleware('throttle:10,1')
+    ->name('chat.messages.store');

@@ -7,7 +7,7 @@ import {
 import { Stat } from '@/components/stat';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 interface User {
     first_name: string;
@@ -15,7 +15,18 @@ interface User {
     email: string;
 }
 
-export default function AdminDashboard() {
+interface Stats {
+    total_chats: number;
+    active_agents: number;
+    unassigned_chats: number;
+    messages_today: number;
+}
+
+interface Props {
+    stats: Stats;
+}
+
+export default function AdminDashboard({ stats }: Props) {
     const page = usePage();
     const auth = page.props.auth as { user: User } | undefined;
     const user = auth?.user;
@@ -51,28 +62,28 @@ export default function AdminDashboard() {
                         <StaggerItem>
                             <Stat
                                 label="Total Chats"
-                                value="24"
-                                description="Active conversations"
+                                value={stats.total_chats.toString()}
+                                description="All conversations"
                             />
                         </StaggerItem>
                         <StaggerItem>
                             <Stat
                                 label="Active Agents"
-                                value="3"
+                                value={stats.active_agents.toString()}
                                 description="Assigned to chats"
                             />
                         </StaggerItem>
                         <StaggerItem>
                             <Stat
-                                label="Pending Chats"
-                                value="5"
+                                label="Unassigned Chats"
+                                value={stats.unassigned_chats.toString()}
                                 description="Awaiting assignment"
                             />
                         </StaggerItem>
                         <StaggerItem>
                             <Stat
                                 label="Messages Today"
-                                value="142"
+                                value={stats.messages_today.toString()}
                                 description="Total messages sent"
                             />
                         </StaggerItem>
@@ -82,23 +93,28 @@ export default function AdminDashboard() {
                 {/* Quick Actions */}
                 <SlideIn direction="bottom" delay={0.5}>
                     <div className="grid gap-4 md:grid-cols-2">
-                        <div className="rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md dark:border-border">
-                            <h2 className="font-semibold text-foreground">
-                                Recent Chats
-                            </h2>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                                View and manage the most recent conversations.
-                            </p>
-                        </div>
-                        <div className="rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md dark:border-border">
-                            <h2 className="font-semibold text-foreground">
-                                System Status
-                            </h2>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                                All systems operational. Response times are
-                                optimal.
-                            </p>
-                        </div>
+                        <Link href="/admin/chats">
+                            <div className="rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md dark:border-border cursor-pointer">
+                                <h2 className="font-semibold text-foreground">
+                                    Manage Chats
+                                </h2>
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    View and manage all customer conversations. Assign
+                                    agents and monitor chat activity.
+                                </p>
+                            </div>
+                        </Link>
+                        <Link href="/admin/rules">
+                            <div className="rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md dark:border-border cursor-pointer">
+                                <h2 className="font-semibold text-foreground">
+                                    Auto-Reply Rules
+                                </h2>
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    Configure intelligent auto-reply rules for common
+                                    questions and scenarios.
+                                </p>
+                            </div>
+                        </Link>
                     </div>
                 </SlideIn>
             </div>

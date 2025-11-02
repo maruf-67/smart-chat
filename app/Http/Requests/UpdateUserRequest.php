@@ -51,7 +51,7 @@ class UpdateUserRequest extends FormRequest
             'password' => ['nullable', 'string', Password::min(8)->letters()->numbers(), 'confirmed'],
             'role_id' => [
                 'nullable',
-                Rule::requiredIf(fn() => $this->input('user_type') === 'admin'),
+                Rule::requiredIf(fn () => $this->input('user_type') === 'admin'),
                 'integer',
                 'exists:roles,id',
             ],

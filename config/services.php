@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'pdf_to_text' => [
+        'binary' => env('PDF_TO_TEXT_BINARY'),
+        'timeout' => env('PDF_TO_TEXT_TIMEOUT', 20),
+        'max_excerpt_length' => env('PDF_TO_TEXT_MAX_EXCERPT', 3500),
+    ],
+
 ];

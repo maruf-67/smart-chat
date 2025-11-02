@@ -30,6 +30,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::controller(AdminChatController::class)->prefix('chats')->name('chats.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/{id}', 'show')->name('show');
+        Route::post('/{id}/messages', 'storeMessage')->name('storeMessage');
         Route::patch('/{id}', 'update')->name('update');
     });
 

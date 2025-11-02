@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agent;
 
 use App\Http\Requests\StoreMessageRequest;
+use App\Models\Message;
 use App\Services\ChatService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -104,10 +105,23 @@ class ChatController
         }
 
         // Add message with agent sender type
-        $messageData = array_merge($request->validated(), [
-            'sender' => 'agent',
+        $messageData = [
+            'content' => $request->input('content'),
+            'sender' => Message::SENDER_AGENT,
             'user_id' => auth()->id(),
-        ]);
+            'is_auto_reply' => false,
+            'is_from_guest' => false,
+        ];
+
+        // Handle file upload if present
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $path = $file->store('chat-attachments', 'public');
+
+            $messageData['file_path'] = $path;
+            $messageData['file_type'] = strtolower($file->getClientOriginalExtension());
+            $messageData['file_size'] = $file->getSize();
+        }
 
         $this->chatService->addMessage($id, $messageData);
 

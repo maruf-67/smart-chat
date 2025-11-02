@@ -22,9 +22,10 @@ import { useMemo } from 'react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
-    const { auth } = usePage().props as {
-        auth: { user: { user_type?: 'admin' | 'agent' | 'user' } };
-    };
+    const page = usePage();
+    const auth = page.props.auth as
+        | { user: { user_type?: 'admin' | 'agent' | 'user' } }
+        | undefined;
     const userType = auth?.user?.user_type;
 
     const mainNavItems = useMemo((): NavItem[] => {
