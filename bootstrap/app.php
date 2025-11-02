@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php'
+    )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
@@ -20,6 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        // Register custom middleware aliases
+        $middleware->alias([
+            'permission' => \App\Http\Middleware\EnsurePermission::class,
+            'admin' => \App\Http\Middleware\EnsureAdmin::class,
+            'agent' => \App\Http\Middleware\EnsureAgent::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

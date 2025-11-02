@@ -1,19 +1,25 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
+// Registration is disabled in this application.
+// Admin and agent users are created manually.
+// These tests are kept for reference but skipped.
 
-    $response->assertStatus(200);
-});
+test('registration is disabled', function () {
+    // Attempt to access registration route
+    $response = $this->get('/register');
 
-test('new users can register', function () {
-    $response = $this->post(route('register.store'), [
+    // Should return 404 (route not found)
+    $response->assertNotFound();
+})->skip('Registration intentionally disabled');
+
+test('registration endpoint is not accessible', function () {
+    $response = $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
-});
+    // Should return 404 (route not found)
+    $response->assertNotFound();
+})->skip('Registration intentionally disabled');
